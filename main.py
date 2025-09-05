@@ -8,6 +8,10 @@ from pydantic import BaseModel, Field
 import os
 from datetime import datetime
 import uuid
+from dotenv import load_dotenv
+
+# Load environment variables from config.env file
+load_dotenv('config.env')
 
 # Page Configuration
 st.set_page_config(
@@ -59,7 +63,7 @@ class PromptResponse(BaseModel):
     timestamp: datetime = Field(default_factory=datetime.now)
 
 # Configuration
-OPENROUTER_API_KEY = st.secrets.get("OPENROUTER_API_KEY", os.getenv("OPENROUTER_API_KEY", ""))
+OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
 # Available Models
