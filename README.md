@@ -22,12 +22,18 @@ pip install -r requirements.txt
 
 ### 2. Set Up API Keys
 
-#### Option A: Environment Variables
-```bash
-export OPENROUTER_API_KEY="your_api_key_here"
+#### Option A: Environment Variables (Windows PowerShell)
+```powershell
+$env:OPENROUTER_API_KEY="your_api_key_here"
 ```
 
-#### Option B: Streamlit Secrets (Recommended)
+#### Option B: Config File (Recommended)
+Edit `config.env`:
+```env
+OPENROUTER_API_KEY=your_api_key_here
+```
+
+#### Option C: Streamlit Secrets
 Create `.streamlit/secrets.toml`:
 ```toml
 OPENROUTER_API_KEY = "your_api_key_here"
@@ -44,12 +50,12 @@ The app will open in your browser at `http://localhost:8501`
 ## 🔧 Configuration
 
 ### Available AI Models
-- **GPT-4** (OpenAI) - Most capable, highest cost
-- **GPT-4 Turbo** (OpenAI) - Fast, cost-effective
-- **Claude 3 Opus** (Anthropic) - Creative and analytical
-- **Claude 3 Sonnet** (Anthropic) - Balanced performance
-- **Llama 3 70B** (Meta) - Open source alternative
-- **Gemini Pro** (Google) - Google's latest model
+- **Llama 3.1 70B Instruct** (Meta) - ✅ **Currently Working** - Powerful open source model
+- **Gemini Pro** (Google) - Google's latest model (Hong Kong friendly)
+- **Gemini Pro 1.5** (Google) - Enhanced version with better performance
+- **Claude 3 Sonnet** (Anthropic) - Balanced performance and creativity
+- **Claude 3 Haiku** (Anthropic) - Fast and efficient
+- **Phi-3 Medium** (Microsoft) - Compact but capable model
 
 ### Advanced Options
 - **Temperature**: Controls creativity (0.1 = focused, 0.9 = creative)
@@ -62,6 +68,10 @@ The app will open in your browser at `http://localhost:8501`
 c4lesson9hw/
 ├── main.py                 # Main Streamlit application
 ├── requirements.txt        # Python dependencies
+├── config.env             # API key configuration
+├── API_SETUP.md           # API setup instructions
+├── test_api.py            # API testing script
+├── test_models.py         # Model testing script
 ├── README.md              # This file
 ├── project.md             # Project documentation
 ├── ui_mockup.md           # UI design specifications
@@ -119,13 +129,19 @@ cd c4lesson9hw
 
 # Create virtual environment
 python -m venv venv
-source venv/bin/activate  # On Windows: venv\Scripts\activate
+# On Windows:
+venv\Scripts\activate
+# On macOS/Linux:
+source venv/bin/activate
 
 # Install dependencies
 pip install -r requirements.txt
 
+# Set up API key (Windows PowerShell)
+$env:OPENROUTER_API_KEY="your_api_key_here"
+
 # Run development server
-streamlit run main.py --server.port 8501
+python -m streamlit run main.py
 ```
 
 ### Environment Variables

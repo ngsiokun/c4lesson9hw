@@ -66,14 +66,49 @@ class PromptResponse(BaseModel):
 OPENROUTER_API_KEY = os.getenv("OPENROUTER_API_KEY", "")
 OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1"
 
-# Available Models
+# API Key loaded successfully
+
+# API Function
+async def call_openrouter_api(system_prompt: str, context: str, question: str, model: str, temperature: float, max_tokens: int) -> str:
+    """Simple function to call Openrouter API"""
+    try:
+        headers = {
+            "Authorization": f"Bearer {OPENROUTER_API_KEY}",
+            "Content-Type": "application/json"
+        }
+        
+        payload = {
+            "model": model,
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Context: {context}\n\nQuestion: {question}"}
+            ],
+            "temperature": temperature,
+            "max_tokens": max_tokens
+        }
+        
+        async with aiohttp.ClientSession() as session:
+            async with session.post(f"{OPENROUTER_BASE_URL}/chat/completions", 
+                                  headers=headers, 
+                                  json=payload) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return data["choices"][0]["message"]["content"]
+                else:
+                    error_text = await response.text()
+                    return f"Error: API request failed with status {response.status}\nResponse: {error_text}"
+                    
+    except Exception as e:
+        return f"Error: {str(e)}"
+
+# Available Models (Hong Kong friendly)
 AVAILABLE_MODELS = {
-    "gpt-4": "GPT-4 (OpenAI)",
-    "gpt-4-turbo": "GPT-4 Turbo (OpenAI)",
-    "claude-3-opus": "Claude 3 Opus (Anthropic)",
-    "claude-3-sonnet": "Claude 3 Sonnet (Anthropic)",
-    "llama-3-70b": "Llama 3 70B (Meta)",
-    "gemini-pro": "Gemini Pro (Google)"
+    "google/gemini-pro": "Gemini Pro (Google)",
+    "google/gemini-pro-1.5": "Gemini Pro 1.5 (Google)",
+    "meta-llama/llama-3.1-70b-instruct": "Llama 3.1 70B Instruct (Meta)",
+    "anthropic/claude-3-sonnet": "Claude 3 Sonnet (Anthropic)",
+    "anthropic/claude-3-haiku": "Claude 3 Haiku (Anthropic)",
+    "microsoft/phi-3-medium-128k-instruct": "Phi-3 Medium (Microsoft)"
 }
 
 # Initialize session state
@@ -128,6 +163,7 @@ def main():
             "Model Selection:",
             options=list(AVAILABLE_MODELS.keys()),
             format_func=lambda x: AVAILABLE_MODELS[x],
+            index=2,  # Default to Llama 3.1 70B which we know works
             help="Choose the AI model to use"
         )
         
@@ -255,7 +291,16 @@ def main():
             st.error("Please fill in all required fields: System Prompt, Context, and Question.")
             return
         
-        st.info("API integration would happen here. This is a demo version.")
+        # Show loading state
+        with st.spinner("Getting AI response..."):
+            # Call the API
+            response = asyncio.run(call_openrouter_api(
+                system_prompt, context, question, selected_model, temperature, max_tokens
+            ))
+            
+            # Update session state with the response
+            st.session_state.current_response = response
+            st.rerun()
         
     elif send_button and not OPENROUTER_API_KEY:
         st.error("""
